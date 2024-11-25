@@ -30,7 +30,14 @@ public class SignupController {
     /**
      * Executes the "switch to LoginView" Use Case.
      */
-    public void switchToLoginView() {
-        userSignupUseCaseInteractor.switchToLoginView();
+    public void switchToWelcomeView() {
+        userSignupUseCaseInteractor.switchToWelcomeView();
+    }
+
+    /**
+     * Executes the "switch to MenuView" use case.
+     */
+    public void switchToMenuView() {
+        userSignupUseCaseInteractor.switchToMenuView();
     }
 }

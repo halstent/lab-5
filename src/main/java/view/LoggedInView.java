@@ -1,10 +1,13 @@
 package view;
 
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -13,7 +16,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import interface_adapter.change_password.ChangePasswordController;
+import interface_adapter.statistics.ChangePasswordController;
 import interface_adapter.change_password.LoggedInState;
 import interface_adapter.change_password.LoggedInViewModel;
 import interface_adapter.logout.LogoutController;
@@ -36,10 +39,14 @@ public class LoggedInView extends JPanel implements PropertyChangeListener {
     private final JTextField passwordInputField = new JTextField(15);
     private final JButton changePassword;
 
+    private final Image backgroundImage;
+
     @SuppressWarnings("checkstyle:FinalLocalVariable")
     public LoggedInView(LoggedInViewModel loggedInViewModel) {
         this.loggedInViewModel = loggedInViewModel;
         this.loggedInViewModel.addPropertyChangeListener(this);
+
+        backgroundImage = new ImageIcon("images/casinoimage.png").getImage();
 
         final JLabel title = new JLabel("Logged In Screen");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -91,7 +98,8 @@ public class LoggedInView extends JPanel implements PropertyChangeListener {
 
                         this.changePasswordController.execute(
                                 currentState.getUsername(),
-                                currentState.getPassword()
+                                currentState.getPassword(),
+                                currentState.getInfo()
                         );
                     }
                 }
@@ -127,6 +135,13 @@ public class LoggedInView extends JPanel implements PropertyChangeListener {
             JOptionPane.showMessageDialog(null, "password updated for " + state.getUsername());
         }
 
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Draw the background image to cover the whole panel
+        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
     }
 
     public String getViewName() {

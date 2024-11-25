@@ -23,7 +23,7 @@ import interface_adapter.signup.SignupViewModel;
 /**
  * The View for the Signup Use Case.
  */
-public class SignupView extends JPanel implements ActionListener, PropertyChangeListener {
+public class SignupView extends JPanel implements PropertyChangeListener {
     private final String viewName = "sign up";
 
     private final SignupViewModel signupViewModel;
@@ -34,7 +34,6 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
     private final JButton signUp;
     private final JButton cancel;
-    private final JButton toLogin;
 
     public SignupView(SignupViewModel signupViewModel) {
         this.signupViewModel = signupViewModel;
@@ -51,8 +50,8 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                 new JLabel(SignupViewModel.REPEAT_PASSWORD_LABEL), repeatPasswordInputField);
 
         final JPanel buttons = new JPanel();
-        toLogin = new JButton(SignupViewModel.TO_LOGIN_BUTTON_LABEL);
-        buttons.add(toLogin);
+        // toLogin = new JButton(SignupViewModel.TO_LOGIN_BUTTON_LABEL);
+        // buttons.add(toLogin);
         signUp = new JButton(SignupViewModel.SIGNUP_BUTTON_LABEL);
         buttons.add(signUp);
         cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
@@ -75,15 +74,13 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                 }
         );
 
-        toLogin.addActionListener(
+        cancel.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        signupController.switchToLoginView();
+                        signupController.switchToWelcomeView();
                     }
                 }
         );
-
-        cancel.addActionListener(this);
 
         addUsernameListener();
         addPasswordListener();
@@ -176,17 +173,24 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         });
     }
 
-    @Override
+    /* @Override
     public void actionPerformed(ActionEvent evt) {
         JOptionPane.showMessageDialog(this, "Cancel not implemented yet.");
-    }
+    }*/
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         final SignupState state = (SignupState) evt.getNewValue();
+        setFields(state);
         if (state.getUsernameError() != null) {
             JOptionPane.showMessageDialog(this, state.getUsernameError());
         }
+    }
+
+    private void setFields(SignupState state) {
+        usernameInputField.setText(state.getUsername());
+        passwordInputField.setText(state.getPassword());
+        repeatPasswordInputField.setText(state.getRepeatPassword());
     }
 
     public String getViewName() {

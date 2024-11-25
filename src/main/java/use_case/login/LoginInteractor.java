@@ -37,4 +37,14 @@ public class LoginInteractor implements LoginInputBoundary {
             }
         }
     }
+
+    @Override
+    public User get(String username) {
+        return userDataAccessObject.get(username);
+    }
+
+    @Override
+    public void switchToWelcomeView() {
+        loginPresenter.switchToWelcomeView();
+    }
 }
