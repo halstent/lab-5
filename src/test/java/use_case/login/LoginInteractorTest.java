@@ -4,7 +4,9 @@ import data_access.InMemoryUserDataAccessObject;
 import entity.CommonUserFactory;
 import entity.User;
 import entity.UserFactory;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+
 
 import java.time.LocalDateTime;
 
@@ -19,7 +21,7 @@ class LoginInteractorTest {
 
         // For the success test, we need to add Paul to the data access repository before we log in.
         UserFactory factory = new CommonUserFactory();
-        User user = factory.create("Paul", "password");
+        User user = factory.create("Paul", "password", new JSONObject());
         userRepository.save(user);
 
         // This creates a successPresenter that tests whether the test case is as we expect.
@@ -32,6 +34,11 @@ class LoginInteractorTest {
             @Override
             public void prepareFailView(String error) {
                 fail("Use case failure is unexpected.");
+            }
+
+            @Override
+            public void switchToWelcomeView() {
+
             }
         };
 
@@ -46,7 +53,7 @@ class LoginInteractorTest {
 
         // For the success test, we need to add Paul to the data access repository before we log in.
         UserFactory factory = new CommonUserFactory();
-        User user = factory.create("Paul", "password");
+        User user = factory.create("Paul", "password", new JSONObject());
         userRepository.save(user);
 
         // This creates a successPresenter that tests whether the test case is as we expect.
@@ -59,6 +66,11 @@ class LoginInteractorTest {
             @Override
             public void prepareFailView(String error) {
                 fail("Use case failure is unexpected.");
+            }
+
+            @Override
+            public void switchToWelcomeView() {
+
             }
         };
 
@@ -76,7 +88,7 @@ class LoginInteractorTest {
         // For this failure test, we need to add Paul to the data access repository before we log in, and
         // the passwords should not match.
         UserFactory factory = new CommonUserFactory();
-        User user = factory.create("Paul", "password");
+        User user = factory.create("Paul", "password", new JSONObject());
         userRepository.save(user);
 
         // This creates a presenter that tests whether the test case is as we expect.
@@ -90,6 +102,11 @@ class LoginInteractorTest {
             @Override
             public void prepareFailView(String error) {
                 assertEquals("Incorrect password for \"Paul\".", error);
+            }
+
+            @Override
+            public void switchToWelcomeView() {
+
             }
         };
 
@@ -115,6 +132,11 @@ class LoginInteractorTest {
             @Override
             public void prepareFailView(String error) {
                 assertEquals("Paul: Account does not exist.", error);
+            }
+
+            @Override
+            public void switchToWelcomeView() {
+
             }
         };
 
