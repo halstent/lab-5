@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import entity.User;
+import org.json.JSONObject;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
@@ -30,6 +31,11 @@ public class InMemoryUserDataAccessObject implements SignupUserDataAccessInterfa
     @Override
     public void save(User user) {
         users.put(user.getName(), user);
+    }
+
+    @Override
+    public void saveNew(User user, JSONObject info) {
+
     }
 
     @Override

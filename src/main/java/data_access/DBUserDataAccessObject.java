@@ -12,9 +12,17 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import use_case.Over_Under.bet.OverUnderBetDataAccessInterface;
+import use_case.Over_Under.play.OverUnderUserPlayDataAccessInterface;
+import use_case.add_friend.AddFriendUserDataAccessInterface;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
+import use_case.gaunlet.bet.GaunletBetDataAccessInterface;
+import use_case.gaunlet.guess.GaunletGuessUserDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
+import use_case.shopbutton.ShopButtonUserDataAccessInterface;
+import use_case.shopwheel.ShopWheelUserDataAccessInterface;
+import use_case.remove_friend.RemoveFriendUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 
 /**
@@ -23,7 +31,15 @@ import use_case.signup.SignupUserDataAccessInterface;
 public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
         LoginUserDataAccessInterface,
         ChangePasswordUserDataAccessInterface,
-        LogoutUserDataAccessInterface {
+        LogoutUserDataAccessInterface,
+        GaunletBetDataAccessInterface,
+        GaunletGuessUserDataAccessInterface,
+        AddFriendUserDataAccessInterface,
+        ShopWheelUserDataAccessInterface,
+        ShopButtonUserDataAccessInterface,
+        RemoveFriendUserDataAccessInterface,
+        OverUnderUserPlayDataAccessInterface,
+        OverUnderBetDataAccessInterface {
     private static final int SUCCESS_CODE = 200;
     private static final String CONTENT_TYPE_LABEL = "Content-Type";
     private static final String CONTENT_TYPE_JSON = "application/json";
@@ -33,11 +49,27 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
     private static final String MESSAGE = "message";
     private final UserFactory userFactory;
 
+    // TODO:
+    private String currentUsername;
+    private int currentBet;
+
     public DBUserDataAccessObject(UserFactory userFactory) {
         this.userFactory = userFactory;
         // No need to do anything to reinitialize a user list! The data is the cloud that may be miles away.
+        currentBet = 0;
     }
 
+    // TODO:
+    @Override
+    public void addFriend(User user) {
+
+    }
+
+    /**
+     * Returns the user from the list of users given a username.
+     * @param username is the user's name key.
+     * @return the user associated with the given key.
+     */
     @Override
     public User get(String username) {
         // Make an API call to get the user object.
@@ -55,8 +87,10 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
                 final JSONObject userJSONObject = responseBody.getJSONObject("user");
                 final String name = userJSONObject.getString(USERNAME);
                 final String password = userJSONObject.getString(PASSWORD);
+                final JSONObject data = userJSONObject.getJSONObject("info");
+                // System.out.println("Get method in DB: " + name + ", " + password + ", " + data);
 
-                return userFactory.create(name, password);
+                return userFactory.create(name, password, data);
             }
             else {
                 throw new RuntimeException(responseBody.getString(MESSAGE));
@@ -70,6 +104,7 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
     @Override
     public void setCurrentUsername(String name) {
         // this isn't implemented for the lab
+        this.currentUsername = name;
     }
 
     @Override
@@ -90,6 +125,12 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
         catch (IOException | JSONException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    @Override
+    public void setBet(int bet) {
+        this.currentBet = bet;
+        System.out.println("DB setbet bet: " + bet);
     }
 
     @Override
@@ -118,6 +159,46 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
             }
             else {
                 throw new RuntimeException(responseBody.getString(MESSAGE));
+            }
+        }
+        catch (IOException | JSONException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public int getBet() {
+        return currentBet;
+    }
+
+    @Override
+    public void saveNew(User user, JSONObject info) {
+        // SAVE
+        final OkHttpClient client1 = new OkHttpClient().newBuilder()
+                .build();
+
+        // POST METHOD
+        final MediaType mediaType1 = MediaType.parse(CONTENT_TYPE_JSON);
+        final JSONObject requestBody1 = new JSONObject();
+        requestBody1.put(USERNAME, user.getName());
+        requestBody1.put(PASSWORD, user.getPassword());
+        requestBody1.put("info", info);
+        final RequestBody body1 = RequestBody.create(requestBody1.toString(), mediaType1);
+        final Request request1 = new Request.Builder()
+                .url("http://vm003.teach.cs.toronto.edu:20112/modifyUserInfo")
+                .method("PUT", body1)
+                .addHeader(CONTENT_TYPE_LABEL, CONTENT_TYPE_JSON)
+                .build();
+        try {
+            final Response response1 = client1.newCall(request1).execute();
+
+            final JSONObject responseBody1 = new JSONObject(response1.body().string());
+
+            if (responseBody1.getInt(STATUS_CODE_LABEL) == SUCCESS_CODE) {
+                // success
+            }
+            else {
+                throw new RuntimeException(responseBody1.getString(MESSAGE));
             }
         }
         catch (IOException | JSONException ex) {
@@ -160,6 +241,6 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
 
     @Override
     public String getCurrentUsername() {
-        return null;
+        return this.currentUsername;
     }
 }
