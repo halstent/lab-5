@@ -1,0 +1,41 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+/'autonumber
+
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+
+Alice -> Bob: Another authentication Request
+Alice <-- Bob: another authentication Response'/
+title Gauntlet GameController Sequence Diagram
+
+actor User
+participant GameController
+participant Bet
+participant CoinInteractor
+participant DiceInteractor
+participant RPSInteractor
+participant GamePresenter
+
+User -> GameController : placeBet(bet, flipGuess, rollGuess, rpsGuess)
+GameController -> Bet : isValidBet(bet)
+alt bet is invalid
+    Bet --> GamePresenter : false
+    GamePresenter --> User : "Bet must meet minimum requirement"
+else bet is valid
+    Bet --> GameController : true
+    GameController -> CoinInteractor : flip()
+    CoinInteractor --> GameController : coinResult
+    GameController -> DiceInteractor : roll()
+    DiceInteractor --> GameController : diceResult
+    GameController -> RPSInteractor : play()
+    RPSInteractor --> GameController : rpsResult
+    GameController -> GamePresenter : showResults(coinResult, diceResult, rpsResult)
+    alt all guesses correct
+        GameController -> GamePresenter : "You won! Total winnings: $winnings"
+    else one or more guesses incorrect
+        GameController -> GamePresenter : "You lost. Try again!"
+    end
+end
+@enduml

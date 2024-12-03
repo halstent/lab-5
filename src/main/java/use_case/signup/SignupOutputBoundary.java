@@ -20,5 +20,11 @@ public interface SignupOutputBoundary {
     /**
      * Switches to the Login View.
      */
-    void switchToLoginView();
+    void switchToWelcomeView();
+
+    /**
+     * Switches to the menu View.
+     */
+    void switchToMenuView();
+
 }

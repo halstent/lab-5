@@ -1,21 +1,17 @@
 package view;
 
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 
+import entity.AppColors;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupState;
 import interface_adapter.signup.SignupViewModel;
@@ -23,40 +19,43 @@ import interface_adapter.signup.SignupViewModel;
 /**
  * The View for the Signup Use Case.
  */
-public class SignupView extends JPanel implements ActionListener, PropertyChangeListener {
-    private final String viewName = "sign up";
-
+public class SignupView extends JPanel implements PropertyChangeListener {
     private final SignupViewModel signupViewModel;
-    private final JTextField usernameInputField = new JTextField(15);
-    private final JPasswordField passwordInputField = new JPasswordField(15);
-    private final JPasswordField repeatPasswordInputField = new JPasswordField(15);
+    final JTextField usernameInputField = createStyledTextComponent(new JTextField());
+    final JTextField passwordInputField = createStyledTextComponent(new JPasswordField());
+    final JTextField repeatPasswordInputField = createStyledTextComponent(new JPasswordField());
     private SignupController signupController;
-
     private final JButton signUp;
-    private final JButton cancel;
-    private final JButton toLogin;
 
     public SignupView(SignupViewModel signupViewModel) {
+
         this.signupViewModel = signupViewModel;
         signupViewModel.addPropertyChangeListener(this);
 
-        final JLabel title = new JLabel(SignupViewModel.TITLE_LABEL);
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        final JLabel username = new JLabel(SignupViewModel.USERNAME_LABEL);
+        username.setFont(new Font("Serif", Font.BOLD, 20));
+        username.setForeground(AppColors.YELLOW);
+        final JLabel password = new JLabel(SignupViewModel.PASSWORD_LABEL);
+        password.setFont(new Font("Serif", Font.BOLD, 20));
+        password.setForeground(AppColors.YELLOW);
+        final JLabel rPassword = new JLabel(SignupViewModel.REPEAT_PASSWORD_LABEL);
+        rPassword.setFont(new Font("Serif", Font.BOLD, 20));
+        rPassword.setForeground(AppColors.YELLOW);
 
-        final LabelTextPanel usernameInfo = new LabelTextPanel(
-                new JLabel(SignupViewModel.USERNAME_LABEL), usernameInputField);
-        final LabelTextPanel passwordInfo = new LabelTextPanel(
-                new JLabel(SignupViewModel.PASSWORD_LABEL), passwordInputField);
-        final LabelTextPanel repeatPasswordInfo = new LabelTextPanel(
-                new JLabel(SignupViewModel.REPEAT_PASSWORD_LABEL), repeatPasswordInputField);
+        final LabelTextPanel usernameInfo = new LabelTextPanel(username, usernameInputField);
+        usernameInfo.setBackground(AppColors.DARK_GREEN);
+        final LabelTextPanel passwordInfo = new LabelTextPanel(password, passwordInputField);
+        passwordInfo.setBackground(AppColors.DARK_GREEN);
+        final LabelTextPanel rPasswordInfo = new LabelTextPanel(rPassword, repeatPasswordInputField);
+        rPasswordInfo.setBackground(AppColors.DARK_GREEN);
+
 
         final JPanel buttons = new JPanel();
-        toLogin = new JButton(SignupViewModel.TO_LOGIN_BUTTON_LABEL);
-        buttons.add(toLogin);
-        signUp = new JButton(SignupViewModel.SIGNUP_BUTTON_LABEL);
-        buttons.add(signUp);
-        cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
+        buttons.setBackground(AppColors.DARK_GREEN);
+        JButton cancel = createStyledButton(SignupViewModel.CANCEL_BUTTON_LABEL, AppColors.BRIGHT_GREEN);
         buttons.add(cancel);
+        signUp = createStyledButton(SignupViewModel.SIGNUP_BUTTON_LABEL, AppColors.DARK_RED);
+        buttons.add(signUp);
 
         signUp.addActionListener(
                 // This creates an anonymous subclass of ActionListener and instantiates it.
@@ -75,26 +74,18 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                 }
         );
 
-        toLogin.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        signupController.switchToLoginView();
-                    }
-                }
-        );
-
-        cancel.addActionListener(this);
+        cancel.addActionListener(e -> signupController.switchToWelcomeView());
 
         addUsernameListener();
         addPasswordListener();
         addRepeatPasswordListener();
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        this.add(title);
+        this.setBackground(AppColors.DARK_GREEN);
+        this.add(Box.createVerticalStrut(20));
         this.add(usernameInfo);
         this.add(passwordInfo);
-        this.add(repeatPasswordInfo);
+        this.add(rPasswordInfo);
         this.add(buttons);
     }
 
@@ -129,7 +120,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
             private void documentListenerHelper() {
                 final SignupState currentState = signupViewModel.getState();
-                currentState.setPassword(new String(passwordInputField.getPassword()));
+                currentState.setPassword(passwordInputField.getText());
                 signupViewModel.setState(currentState);
             }
 
@@ -155,7 +146,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
             private void documentListenerHelper() {
                 final SignupState currentState = signupViewModel.getState();
-                currentState.setRepeatPassword(new String(repeatPasswordInputField.getPassword()));
+                currentState.setRepeatPassword(repeatPasswordInputField.getText());
                 signupViewModel.setState(currentState);
             }
 
@@ -177,20 +168,41 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt) {
-        JOptionPane.showMessageDialog(this, "Cancel not implemented yet.");
-    }
-
-    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         final SignupState state = (SignupState) evt.getNewValue();
-        if (state.getUsernameError() != null) {
-            JOptionPane.showMessageDialog(this, state.getUsernameError());
+        setFields(state);
+        if (state.getError() != null) {
+            JOptionPane.showMessageDialog(this, state.getError());
         }
     }
 
+    private void setFields(SignupState state) {
+        usernameInputField.setText(state.getUsername());
+        passwordInputField.setText(state.getPassword());
+        repeatPasswordInputField.setText(state.getRepeatPassword());
+    }
+
+    private <T extends JTextComponent> T createStyledTextComponent(T textComponent) {
+        textComponent.setBackground(AppColors.BRIGHT_GREEN);
+        textComponent.setForeground(AppColors.YELLOW);
+        textComponent.setFont(new Font("Serif", Font.PLAIN, 20));
+        textComponent.setCaretColor(AppColors.YELLOW);
+        textComponent.setPreferredSize(new Dimension(180, 50));
+        return textComponent;
+    }
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton button = new JButton(text);
+        button.setBackground(bgColor);
+        button.setForeground(AppColors.YELLOW);
+        button.setFont(new Font("Serif", Font.BOLD, 20));
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(180, 50));
+        button.setBorder(BorderFactory.createLineBorder(AppColors.YELLOW, 2));
+        return button;
+    }
+
     public String getViewName() {
-        return viewName;
+        return "sign up";
     }
 
     public void setSignupController(SignupController controller) {
